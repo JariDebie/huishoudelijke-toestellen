@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/routes/register/register_form.dart';
+import 'package:flutter_application_1/components/credentials_form.dart';
 
 class RegisterRoute extends StatelessWidget {
   const RegisterRoute({super.key});
@@ -9,7 +9,12 @@ class RegisterRoute extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Register")),
       body: Center(
-        child: const RegisterForm(),
+        child: CredentialsForm(
+          successText: "Register",
+          onSuccessPress: (username, password) {
+            return true;
+          },
+        ),
       )
     );
   }

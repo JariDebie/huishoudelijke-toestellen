@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/routes/login/login_form.dart';
+import 'package:flutter_application_1/components/credentials_form.dart';
 
 class LoginRoute extends StatelessWidget {
   const LoginRoute({super.key});
@@ -9,7 +9,12 @@ class LoginRoute extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Login")),
       body: Center(
-        child: const LoginForm(),
+        child: CredentialsForm(
+          successText: "Login",
+          onSuccessPress: (username, password) {
+            return true;
+          },
+        ),
       ),
     );
   }
