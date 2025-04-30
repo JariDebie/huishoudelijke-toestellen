@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/routes/main/main_route.dart';
 
 class CredentialsForm extends StatefulWidget {
   final String successText;
@@ -77,7 +78,8 @@ class _CredentialsFormState extends State<CredentialsForm> {
 
                           bool result = widget.onSuccessPress(_email!, _password!);
                           if (result) {
-                            Navigator.pushReplacementNamed(context, "/main");
+                            Navigator.pop(context);
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainRoute()));
                           } else {
                             // error message
                           }
@@ -97,7 +99,7 @@ class _CredentialsFormState extends State<CredentialsForm> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, "/");
+                        Navigator.pop(context);
                       }, 
                       style: ButtonStyle(
                         backgroundColor: WidgetStatePropertyAll<Color>(Colors.red.shade200),

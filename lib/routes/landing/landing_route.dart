@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/routes/login/login_route.dart';
+import 'package:flutter_application_1/routes/register/register_route.dart';
 
 class LandingRoute extends StatelessWidget {
   const LandingRoute({super.key});
@@ -14,7 +16,7 @@ class LandingRoute extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 8.0),
               child: FilledButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, "/login");
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginRoute()));
                 },
                 child: const Text("Login"),
               ),
@@ -23,7 +25,7 @@ class LandingRoute extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 8.0),
               child: FilledButton.tonal(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, "/register");
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterRoute()));
                 },
                 child: const Text("Register"),
               )
