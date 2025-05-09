@@ -11,8 +11,13 @@ class RegisterRoute extends StatelessWidget {
       body: Center(
         child: CredentialsForm(
           successText: "Register",
-          onSuccessPress: (username, password) {
-            return true;
+          onSuccessPress: (username, password) async {
+            return Future.delayed(const Duration(seconds: 1), () {
+              return (false, "Test error");
+            });
+          },
+          onSuccess: () {
+            Navigator.pop(context);
           },
         ),
       )
