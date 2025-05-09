@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_route.dart';
+import 'package:flutter_application_1/routes/main/sell/sell_route.dart';
 
 class MainRoute extends StatefulWidget {
   const MainRoute({super.key});
@@ -33,7 +34,7 @@ class _MainRouteState extends State<MainRoute> {
         const MainListingRoute(),
 
         // Sell Appliance
-        const Text("Appliance"),
+        const SellRoute(),
 
         // Profile
         const Text("Profile")
