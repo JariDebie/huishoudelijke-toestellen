@@ -13,7 +13,7 @@ class RegisterRoute extends StatelessWidget {
           successText: "Register",
           onSuccessPress: (username, password) async {
             return Future.delayed(const Duration(seconds: 1), () {
-              return (false, "Test error");
+              return (false, "Not implemented yet");
             });
           },
           onSuccess: () {
