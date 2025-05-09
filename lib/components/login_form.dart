@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class CredentialsForm extends StatefulWidget {
+class LoginForm extends StatefulWidget {
   final String successText;
   final Future<(bool, String)> Function(String username, String password)
   onSuccessPress;
   final void Function() onSuccess;
 
-  const CredentialsForm({
+  const LoginForm({
     super.key,
     required this.successText,
     required this.onSuccessPress,
@@ -14,10 +14,10 @@ class CredentialsForm extends StatefulWidget {
   });
 
   @override
-  State<CredentialsForm> createState() => _CredentialsFormState();
+  State<LoginForm> createState() => _LoginFormState();
 }
 
-class _CredentialsFormState extends State<CredentialsForm> {
+class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   String? _email;
   String? _password;

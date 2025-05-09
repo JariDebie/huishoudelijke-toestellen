@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/components/credentials_form.dart';
+import 'package:flutter_application_1/components/login_form.dart';
 
 class RegisterRoute extends StatelessWidget {
   const RegisterRoute({super.key});
@@ -9,7 +9,7 @@ class RegisterRoute extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Register")),
       body: Center(
-        child: CredentialsForm(
+        child: LoginForm(
           successText: "Register",
           onSuccessPress: (username, password) async {
             return Future.delayed(const Duration(seconds: 1), () {
@@ -20,7 +20,7 @@ class RegisterRoute extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-      )
+      ),
     );
   }
 }
