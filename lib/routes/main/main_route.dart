@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_route.dart';
 import 'package:flutter_application_1/routes/main/sell/sell_route.dart';
+import 'package:flutter_application_1/types/user.dart';
 
 class MainRoute extends StatefulWidget {
-  const MainRoute({super.key});
+  final User user;
+
+  const MainRoute({super.key, required this.user});
 
   @override
   State<MainRoute> createState() => _MainRouteState();
@@ -31,7 +34,7 @@ class _MainRouteState extends State<MainRoute> {
       ),
       body: <Widget>[
         // Listing
-        const MainListingRoute(),
+        MainListingRoute(user: widget.user),
 
         // Sell Appliance
         const SellRoute(),

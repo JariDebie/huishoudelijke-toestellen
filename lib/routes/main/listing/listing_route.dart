@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_map_route.dart';
+import 'package:flutter_application_1/types/user.dart';
 
 class MainListingRoute extends StatelessWidget {
-  const MainListingRoute({super.key});
+  final User user;
+
+  const MainListingRoute({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +17,7 @@ class MainListingRoute extends StatelessWidget {
           spacing: 8,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Welcome, user!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text("Welcome, ${user.displayName}!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const Text("Some additional information here."),
             const Divider(height: 8, thickness: 1),
             const Text("Add some page content here."),

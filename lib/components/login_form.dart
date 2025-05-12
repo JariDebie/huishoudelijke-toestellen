@@ -4,7 +4,7 @@ class LoginForm extends StatefulWidget {
   final String successText;
   final Future<(bool, String)> Function(String username, String password)
   onSuccessPress;
-  final void Function() onSuccess;
+  final Future<String> Function(String username, String password) onSuccess;
 
   const LoginForm({
     super.key,
@@ -69,7 +69,13 @@ class _LoginFormState extends State<LoginForm> {
                     _password!,
                   );
                   if (result.$1) {
-                    widget.onSuccess();
+                    String secondResult = await widget.onSuccess(_email!, _password!);
+
+                    if (secondResult.isNotEmpty) {
+                      setState(() {
+                        _errorMessage = secondResult;
+                      });                    
+                    }
                   } else {
                     setState(() {
                       _errorMessage = result.$2;
