@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_route.dart';
+import 'package:flutter_application_1/routes/main/profile/profile_route.dart';
 import 'package:flutter_application_1/routes/main/sell/sell_route.dart';
 import 'package:flutter_application_1/types/user.dart';
 
@@ -27,7 +28,7 @@ class _MainRouteState extends State<MainRoute> {
           });
         },
         destinations: const <Widget>[
-          NavigationDestination(icon: Icon(Icons.explore), label: "View Listing"),
+          NavigationDestination(icon: Icon(Icons.house), label: "Home"),
           NavigationDestination(icon: Icon(Icons.add_home_rounded), label: "Sell Appliance"),
           NavigationDestination(icon: Icon(Icons.person), label: "Manage Profile")
         ],
@@ -40,7 +41,7 @@ class _MainRouteState extends State<MainRoute> {
         const SellRoute(),
 
         // Profile
-        const Text("Profile")
+        ProfileRoute(user: widget.user)
       ][pageIndex]
     );
   }
