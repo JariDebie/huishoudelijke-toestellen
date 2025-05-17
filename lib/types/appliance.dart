@@ -24,20 +24,23 @@ class Appliance {
 
   Future<User?> getAuthor() async {
     if (_author != null) return _author;
-    CollectionReference users = FirebaseFirestore.instance
-        .collection("users")
-        .withConverter<User>(
-          fromFirestore: User.fromFirestore,
-          toFirestore: (User u, _) => u.toFirestore()
-        );
-    DocumentSnapshot userDoc = await users.doc(authorId).get();
+    try {
+      CollectionReference users = FirebaseFirestore.instance
+          .collection("users")
+          .withConverter<User>(
+            fromFirestore: User.fromFirestore,
+            toFirestore: (User u, _) => u.toFirestore()
+          );
+      DocumentSnapshot userDoc = await users.doc(authorId).get();
 
-    if (userDoc.exists) {
-      User user = userDoc.data() as User;
-      _author = user;
-      return user;
+      if (userDoc.exists) {
+        User user = userDoc.data() as User;
+        _author = user;
+        return user;
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
-    
-    return null;
   }
 }
