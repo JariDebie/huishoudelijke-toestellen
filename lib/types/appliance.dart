@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_application_1/types/category.dart';
 import 'package:flutter_application_1/types/user.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -6,6 +7,7 @@ class Appliance {
   final String authorId;
   User? _author;
   final String description;
+  final ApplianceCategory category;
   final String imageUrl;
   final double price;
   final LatLng location;
@@ -15,6 +17,7 @@ class Appliance {
   Appliance({
     required this.description,
     required this.authorId,
+    required this.category,
     required this.imageUrl,
     required this.price,
     required this.location,
