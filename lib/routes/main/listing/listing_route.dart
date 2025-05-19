@@ -17,13 +17,19 @@ class MainListingRoute extends StatelessWidget {
           spacing: 8,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Welcome, ${user.displayName}!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const Text("Some additional information here."),
+            Text(
+              "Welcome, ${user.displayName}!",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const Text("Some additional information here TEST TEST."),
             const Divider(height: 8, thickness: 1),
             const Text("Add some page content here."),
             FilledButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ListingMapRoute()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ListingMapRoute()),
+                );
               },
               style: const ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll<Color>(Colors.indigo),
@@ -32,8 +38,8 @@ class MainListingRoute extends StatelessWidget {
               child: const Text("View Listings on Map"),
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 }
