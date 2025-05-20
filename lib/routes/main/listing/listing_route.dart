@@ -21,7 +21,7 @@ class MainListingRoute extends StatelessWidget {
               "Welcome, ${user.displayName}!",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const Text("Some additional information here TEST TEST."),
+            const Text("Some additional information here."),
             const Divider(height: 8, thickness: 1),
             const Text("Add some page content here."),
             FilledButton(
