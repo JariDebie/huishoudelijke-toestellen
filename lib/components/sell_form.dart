@@ -269,6 +269,11 @@ class _SellFormState extends State<SellForm> {
                     });
                     return;
                   }
+                  if (_availableFrom!.isAfter(_availableUntil!)) {
+                    setState(() {
+                      _errorMessage = "Please select a valid date range";
+                    });
+                  }
                   if (_category == null) {
                     setState(() {
                       _errorMessage = "Please select a category";
@@ -310,7 +315,7 @@ class _SellFormState extends State<SellForm> {
             ),
           ),
           if (_errorMessage != null)
-            Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            Text(_errorMessage!, style: const TextStyle(color: Colors.red))
         ],
       ),
     );
