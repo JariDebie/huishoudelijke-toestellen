@@ -5,8 +5,9 @@ class User {
   final String email;
   final String password;
   final String username;
+  String? id;
 
-  const User({
+  User({
     required this.displayName,
     required this.email,
     required this.password,

@@ -57,10 +57,13 @@ class LandingRoute extends StatelessWidget {
                     }
 
                     if (context.mounted) {
+                      User user = query.docs[0].data() as User;
+                      user.id = query.docs[0].id;
+                      
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => MainRoute(
-                          user: query.docs[0].data() as User,
+                          user: user,
                         )),
                       );
                     }
