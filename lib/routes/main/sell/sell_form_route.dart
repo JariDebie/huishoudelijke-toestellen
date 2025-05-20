@@ -6,21 +6,21 @@ class SellFormRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: const Text("Details of New Appliance")),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          spacing: 8,
-          children: [
-            SellForm(
-              onSubmit: (description, price, category , imageUrl, availableFrom, availableUntil) async {
-                return (false, "Not implemented yet");
-              },
-            )
-          ],
-        )
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              SellForm(
+                onSubmit: (description, price, category, imageUrl, availableFrom, availableUntil) async {
+                  return (false, "Not implemented yet");
+                },
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
