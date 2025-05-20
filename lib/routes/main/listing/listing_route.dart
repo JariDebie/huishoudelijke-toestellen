@@ -21,16 +21,19 @@ class MainListingRoute extends StatelessWidget {
             const Text("Some additional information here."),
             const Divider(height: 8, thickness: 1),
             const Text("Add some page content here."),
-            FilledButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ListingMapRoute()));
-              },
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(Colors.indigo),
-                foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ListingMapRoute()));
+                },
+                style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.indigo),
+                  foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                ),
+                child: const Text("View Listings on Map"),
               ),
-              child: const Text("View Listings on Map"),
-            ),
+            )
           ],
         )
       )
