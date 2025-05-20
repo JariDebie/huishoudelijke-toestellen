@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/sell/sell_form_route.dart';
+import 'package:flutter_application_1/types/user.dart';
 
 class SellRoute extends StatelessWidget {
-  const SellRoute({super.key});
+  final User user;
+
+  const SellRoute({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,7 @@ class SellRoute extends StatelessWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SellFormRoute()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SellFormRoute(user: user)));
                 },
                 style: const ButtonStyle(
                   backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
