@@ -10,6 +10,7 @@ class SellForm extends StatefulWidget {
     String description,
     String price,
     ApplianceCategory category,
+    String imageUrl,
     DateTime availableFrom,
     DateTime availableUntil,
   )? onSubmit;
@@ -198,7 +199,7 @@ class _SellFormState extends State<SellForm> {
                     return;
                   }
 
-                  widget.onSubmit!(_description!, _price!, _category!, _availableFrom!, _availableUntil!).then((result) {
+                  widget.onSubmit!(_description!, _price!, _category!, "", _availableFrom!, _availableUntil!).then((result) {
                     if (!result.$1) {
                       setState(() {
                         _errorMessage = result.$2;

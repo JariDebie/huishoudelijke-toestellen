@@ -15,7 +15,7 @@ class SellFormRoute extends StatelessWidget {
           spacing: 8,
           children: [
             SellForm(
-              onSubmit: (description, price, category, availableFrom, availableUntil) async {
+              onSubmit: (description, price, category , imageUrl, availableFrom, availableUntil) async {
                 return (false, "Not implemented yet");
               },
             )
