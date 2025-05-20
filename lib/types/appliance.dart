@@ -13,6 +13,7 @@ class Appliance {
   final LatLng location;
   final DateTime availableFrom;
   final DateTime availableUntil;
+  String? id;
 
   Appliance({
     required this.description,
@@ -22,22 +23,23 @@ class Appliance {
     required this.price,
     required this.location,
     required this.availableFrom,
-    required this.availableUntil
+    required this.availableUntil,
+    this.id
   });
 
   Future<User?> getAuthor() async {
     if (_author != null) return _author;
     try {
-      CollectionReference users = FirebaseFirestore.instance
+      CollectionReference<User> users = FirebaseFirestore.instance
           .collection("users")
           .withConverter<User>(
             fromFirestore: User.fromFirestore,
             toFirestore: (User u, _) => u.toFirestore()
           );
-      DocumentSnapshot userDoc = await users.doc(authorId).get();
+      DocumentSnapshot<User> userDoc = await users.doc(authorId).get();
 
       if (userDoc.exists) {
-        User user = userDoc.data() as User;
+        User? user = userDoc.data();
         _author = user;
         return user;
       }
@@ -62,6 +64,7 @@ class Appliance {
       location: LatLng(geoPoint.latitude, geoPoint.longitude),
       availableFrom: (data['availableFrom'] as Timestamp).toDate(),
       availableUntil: (data['availableUntil'] as Timestamp).toDate(),
+      id: doc.id
     );
   }
 

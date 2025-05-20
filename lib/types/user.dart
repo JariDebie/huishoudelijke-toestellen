@@ -12,6 +12,7 @@ class User {
     required this.email,
     required this.password,
     required this.username,
+    this.id
   });
 
   factory User.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? opt) {
@@ -21,6 +22,7 @@ class User {
       email: data['email'] ?? '',
       password: data['password'] ?? '',
       username: data['username'] ?? '',
+      id: doc.id
     );
   }
 
