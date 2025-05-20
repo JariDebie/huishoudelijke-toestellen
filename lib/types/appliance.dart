@@ -46,4 +46,35 @@ class Appliance {
       return null;
     }
   }
+
+  factory Appliance.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? opt) {
+    final data = doc.data()!;
+    final GeoPoint geoPoint = data['location'];
+    
+    return Appliance(
+      description: data['description'],
+      authorId: data['authorId'],
+      category: ApplianceCategory.values.firstWhere(
+        (c) => c.name == data['category']
+      ),
+      imageUrl: data['imageUrl'],
+      price: (data['price'] as num).toDouble(),
+      location: LatLng(geoPoint.latitude, geoPoint.longitude),
+      availableFrom: (data['availableFrom'] as Timestamp).toDate(),
+      availableUntil: (data['availableUntil'] as Timestamp).toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'description': description,
+      'authorId': authorId,
+      'category': category.name,
+      'imageUrl': imageUrl,
+      'price': price,
+      'location': GeoPoint(location.latitude, location.longitude),
+      'availableFrom': Timestamp.fromDate(availableFrom),
+      'availableUntil': Timestamp.fromDate(availableUntil),
+    };
+  }
 }

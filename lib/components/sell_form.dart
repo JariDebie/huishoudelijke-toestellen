@@ -16,6 +16,7 @@ class SellForm extends StatefulWidget {
     String description,
     String price,
     ApplianceCategory category,
+    LatLng location,
     String imageUrl,
     DateTime availableFrom,
     DateTime availableUntil,
@@ -96,6 +97,9 @@ class _SellFormState extends State<SellForm> {
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return "Please enter a price";
+              }
+              if (double.tryParse(value) == null) {
+                return "Please enter a valid number";
               }
               return null;
             },
@@ -282,6 +286,7 @@ class _SellFormState extends State<SellForm> {
                         _description!,
                         _price!,
                         _category!,
+                        _selectedLocation!,
                         _imageFile!.path,
                         _availableFrom!,
                         _availableUntil!,
