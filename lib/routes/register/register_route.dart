@@ -20,13 +20,13 @@ class RegisterRoute extends StatelessWidget {
                 successText: "Register", 
                 onSuccessPress: (username, password, displayName, email) async {
                   try {
-                    CollectionReference users = FirebaseFirestore.instance
+                    CollectionReference<User> users = FirebaseFirestore.instance
                         .collection("users")
                         .withConverter<User>(
                           fromFirestore: User.fromFirestore,
                           toFirestore: (User u, _) => u.toFirestore()
                         );
-                    QuerySnapshot query = await users.where("username", isEqualTo: username).get();
+                    QuerySnapshot<User> query = await users.where("username", isEqualTo: username).get();
                     if (query.docs.isNotEmpty) {
                       return (false, "Username already used");
                     }

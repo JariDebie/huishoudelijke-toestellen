@@ -38,7 +38,7 @@ class _MainRouteState extends State<MainRoute> {
         MainListingRoute(user: widget.user),
 
         // Sell Appliance
-        const SellRoute(),
+        SellRoute(user: widget.user),
 
         // Profile
         ProfileRoute(user: widget.user)

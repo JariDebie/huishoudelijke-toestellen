@@ -22,9 +22,13 @@ class LandingRoute extends StatelessWidget {
                 successText: "Login",
                 onSuccessPress: (username, password) async {
                   try {
-                    CollectionReference users = FirebaseFirestore.instance
-                        .collection("users");
-                    QuerySnapshot query =
+                    CollectionReference<User> users = FirebaseFirestore.instance
+                        .collection("users")
+                        .withConverter<User>(
+                          fromFirestore: User.fromFirestore,
+                          toFirestore: (User u, _) => u.toFirestore()
+                        );
+                    QuerySnapshot<User> query =
                         await users.where("email", isEqualTo: username).get();
                     if (query.docs.isEmpty) {
                       return (false, "Incorrect email or password");
@@ -42,13 +46,13 @@ class LandingRoute extends StatelessWidget {
                 },
                 onSuccess: (username, password) async {
                   try {
-                    CollectionReference users = FirebaseFirestore.instance
+                    CollectionReference<User> users = FirebaseFirestore.instance
                         .collection("users")
                         .withConverter<User>(
                           fromFirestore: User.fromFirestore,
                           toFirestore: (User u, _) => u.toFirestore()
                         );
-                    QuerySnapshot query =
+                    QuerySnapshot<User> query =
                         await users.where("email", isEqualTo: username)
                             .where("password", isEqualTo: password).get();
 
@@ -57,10 +61,12 @@ class LandingRoute extends StatelessWidget {
                     }
 
                     if (context.mounted) {
+                      User user = query.docs[0].data();
+
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => MainRoute(
-                          user: query.docs[0].data() as User,
+                          user: user,
                         )),
                       );
                     }
