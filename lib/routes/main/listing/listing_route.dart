@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_details_route.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_location_select_route.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_map_route.dart';
+import 'package:flutter_application_1/types/appliance.dart';
 import 'package:flutter_application_1/types/category.dart';
 import 'package:flutter_application_1/types/user.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -79,21 +80,22 @@ class _MainListingRouteState extends State<MainListingRoute> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (context) =>
-                              ListingLocationSelectRoute(
-                                initialLocation: _selectedLocation, 
-                                selectLocation: (position, distance) {
-                                  setState(() {
-                                    _selectedLocation = position;
-                                    _selectedDistance = distance;
-                                  });
-                                }
-                              )
+                          (context) => ListingLocationSelectRoute(
+                            initialLocation: _selectedLocation,
+                            selectLocation: (position, distance) {
+                              setState(() {
+                                _selectedLocation = position;
+                                _selectedDistance = distance;
+                              });
+                            },
+                          ),
                     ),
                   );
                 },
                 style: const ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.deepPurple),
+                  backgroundColor: WidgetStatePropertyAll<Color>(
+                    Colors.deepPurple,
+                  ),
                   foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
                 ),
                 child: const Text("Select Location and Distance Filter"),
@@ -143,35 +145,40 @@ class _MainListingRouteState extends State<MainListingRoute> {
                   return ListView.builder(
                     itemCount: filteredDocs.length,
                     itemBuilder: (context, index) {
-                      final data = filteredDocs[index].data();
-                      final authorId = data['authorId'];
-                      final price = data['price'];
+                      final doc = filteredDocs[index];
+
+                      // Create Appliance object
+                      final appliance = Appliance.fromFirestore(
+                        doc as DocumentSnapshot<Map<String, dynamic>>,
+                        null,
+                      );
 
                       return InkWell(
                         borderRadius: BorderRadius.circular(12),
                         onTap: () async {
-                          String authorName = 'Unknown author';
-                          if (authorId != null) {
-                            final userSnap =
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(authorId)
-                                    .get();
-                            final userData = userSnap.data();
-                            authorName =
-                                userData?['display_name'] ?? 'Unknown author';
-                          }
+                          // Fetch author details
+                          final userSnap =
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(appliance.authorId)
+                                  .get();
+                          final userData = userSnap.data();
+                          final author = User(
+                            id: userSnap.id,
+                            displayName: userData?['display_name'] ?? 'Unknown',
+                            email: userData?['email'] ?? '',
+                            password: '', // Not needed here
+                            username: userData?['username'] ?? '',
+                          );
+
                           if (!mounted) return;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder:
                                   (context) => ListingDetailsRoute(
-                                    imageUrl: data['imageUrl'],
-                                    description: data['description'],
-                                    price: price,
-                                    author: authorName,
-                                    category: data['category'],
+                                    appliance: appliance,
+                                    author: author,
                                   ),
                             ),
                           );
@@ -190,13 +197,12 @@ class _MainListingRouteState extends State<MainListingRoute> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        data['description'] ??
-                                            'Unnamed Appliance',
+                                        appliance.description,
                                         style: const TextStyle(fontSize: 16),
                                       ),
                                     ),
                                     Text(
-                                      '€${(price ?? 0).toStringAsFixed(2)}',
+                                      '€${appliance.price.toStringAsFixed(2)}',
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                   ],
@@ -205,7 +211,7 @@ class _MainListingRouteState extends State<MainListingRoute> {
                                 Row(
                                   children: [
                                     Text(
-                                      data['category'] ?? 'No category',
+                                      appliance.category.name,
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black54,
