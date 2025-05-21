@@ -3,15 +3,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_details_route.dart';
+import 'package:flutter_application_1/routes/main/listing/listing_location_select_route.dart';
 import 'package:flutter_application_1/routes/main/listing/listing_map_route.dart';
 import 'package:flutter_application_1/types/category.dart';
 import 'package:flutter_application_1/types/user.dart';
-// Import your enum
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class MainListingRoute extends StatefulWidget {
   final User user;
+  final Distance distance = Distance();
+  final MapController mapController = MapController();
 
-  const MainListingRoute({super.key, required this.user});
+  MainListingRoute({super.key, required this.user});
+
+  double calculateDistance(LatLng a, LatLng b) {
+    return distance.as(LengthUnit.Kilometer, a, b);
+  }
 
   @override
   State<MainListingRoute> createState() => _MainListingRouteState();
@@ -19,6 +27,8 @@ class MainListingRoute extends StatefulWidget {
 
 class _MainListingRouteState extends State<MainListingRoute> {
   ApplianceCategory? selectedCategory;
+  LatLng? _selectedLocation;
+  double? _selectedDistance;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +38,7 @@ class _MainListingRouteState extends State<MainListingRoute> {
         padding: const EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
           children: [
             Text(
               "Welcome, ${widget.user.displayName}!",
@@ -36,28 +47,58 @@ class _MainListingRouteState extends State<MainListingRoute> {
             const Text("Some additional information here."),
             const Divider(height: 8, thickness: 1),
             const Text("Filter by category:"),
-            DropdownButton<ApplianceCategory>(
-              value: selectedCategory,
-              hint: const Text("Select category"),
-              items: [
-                const DropdownMenuItem<ApplianceCategory>(
-                  value: null,
-                  child: Text("All"),
-                ),
-                ...ApplianceCategory.entries.map(
-                  (entry) => DropdownMenuItem(
-                    value: entry.value,
-                    child: Text(entry.label),
+            SizedBox(
+              width: double.infinity,
+              child: DropdownButton<ApplianceCategory>(
+                value: selectedCategory,
+                hint: const Text("Select category"),
+                items: [
+                  const DropdownMenuItem<ApplianceCategory>(
+                    value: null,
+                    child: Text("All"),
                   ),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  selectedCategory = value;
-                });
-              },
+                  ...ApplianceCategory.entries.map(
+                    (entry) => DropdownMenuItem(
+                      value: entry.value,
+                      child: Text(entry.label),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedCategory = value;
+                  });
+                },
+              ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              ListingLocationSelectRoute(
+                                initialLocation: _selectedLocation, 
+                                selectLocation: (position, distance) {
+                                  setState(() {
+                                    _selectedLocation = position;
+                                    _selectedDistance = distance;
+                                  });
+                                }
+                              )
+                    ),
+                  );
+                },
+                style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.deepPurple),
+                  foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                ),
+                child: const Text("Select Location and Distance Filter"),
+              ),
+            ),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -78,8 +119,6 @@ class _MainListingRouteState extends State<MainListingRoute> {
                 child: const Text("View Listings on Map"),
               ),
             ),
-            const SizedBox(height: 8),
-            // Appliance List
             Expanded(
               child: StreamBuilder(
                 stream:
