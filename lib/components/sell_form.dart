@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +8,7 @@ import 'package:flutter_application_1/types/category.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 
 class SellForm extends StatefulWidget {
   SellForm({super.key, required this.onSubmit});
@@ -22,8 +23,8 @@ class SellForm extends StatefulWidget {
     DateTime availableUntil,
   )?
   onSubmit;
+
   final MapController mapController = MapController();
-  final ImagePicker imagePicker = ImagePicker();
 
   @override
   State<SellForm> createState() => _SellFormState();
@@ -31,6 +32,7 @@ class SellForm extends StatefulWidget {
 
 class _SellFormState extends State<SellForm> {
   final _formKey = GlobalKey<FormState>();
+  final String _imgbbApiKey = '026b5184a33f91cf9b72a3d19231d5b0';
 
   LatLng? _selectedLocation;
   String? _description;
@@ -40,34 +42,71 @@ class _SellFormState extends State<SellForm> {
   DateTime? _availableUntil;
   String? _errorMessage;
 
-  File? _imageFile;
+  XFile? _imageFile;
+  Uint8List? _imageBytes;
+
   Future<void> _pickImage() async {
-    XFile? pickedFile = await widget.imagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1024,
-      maxHeight: 1024,
-      imageQuality: 85,
-    );
-
-    if (pickedFile != null) {
-      if (kIsWeb) {
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (pickedFile != null) {
         setState(() {
-          _imageFile = File(pickedFile.path);
+          _imageFile = pickedFile;
         });
-      } else {
-        Directory appDirectory = await getApplicationDocumentsDirectory();
-        String fileName =
-            "${DateTime.now().toIso8601String()}${extension(pickedFile.path)}";
-        String savePath = join(appDirectory.path, "images", fileName);
 
-        await Directory(dirname(savePath)).create(recursive: true);
-
-        File savedImage = await File(pickedFile.path).copy(savePath);
-
-        setState(() {
-          _imageFile = savedImage;
-        });
+        if (kIsWeb) {
+          final bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _imageBytes = bytes;
+          });
+        } else {}
       }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Fout bij kiezen afbeelding: $e')));
+    }
+  }
+
+  Future<String> _uploadImageToImgbb() async {
+    if (_imageFile == null) return '';
+    try {
+      final uri = Uri.parse('https://api.imgbb.com/1/upload');
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['key'] = _imgbbApiKey;
+
+      if (kIsWeb && _imageBytes != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            _imageBytes!,
+            filename: 'device_image.jpg',
+          ),
+        );
+      } else {
+        request.files.add(
+          await http.MultipartFile.fromPath('image', _imageFile!.path),
+        );
+      }
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data']['url'] ?? '';
+      } else {
+        throw Exception('ImgBB upload mislukt');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Fout bij uploaden afbeelding')),
+      );
+      return '';
     }
   }
 
@@ -75,248 +114,214 @@ class _SellFormState extends State<SellForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Column(
-        spacing: 8,
-        children: [
-          TextFormField(
-            decoration: const InputDecoration(labelText: "Description"),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return "Please enter a description";
-              }
-              return null;
-            },
-            onSaved: (newValue) {
-              setState(() {
-                _description = newValue;
-              });
-            },
-          ),
-          TextFormField(
-            decoration: const InputDecoration(labelText: "Price"),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return "Please enter a price";
-              }
-              if (double.tryParse(value) == null) {
-                return "Please enter a valid number";
-              }
-              return null;
-            },
-            onSaved: (newValue) {
-              setState(() {
-                _price = newValue;
-              });
-            },
-          ),
-          DropdownMenu(
-            dropdownMenuEntries: ApplianceCategory.entries,
-            width: double.infinity,
-            label: const Text("Category"),
-            onSelected: (value) {
-              setState(() {
-                _category = value;
-              });
-            },
-          ),
-
-          if (_availableFrom != null)
-            Text(
-              "Available From: ${_availableFrom!.year}/${_availableFrom!.month}/${_availableFrom!.day}",
-            )
-          else
-            const Text("Available From: Not set"),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () async {
-                DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: _availableFrom ?? DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (pickedDate != null && pickedDate != _availableFrom) {
-                  setState(() {
-                    _availableFrom = pickedDate;
-                  });
-                }
-              },
-              child: const Text("Select Available From date"),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              decoration: const InputDecoration(labelText: "Description"),
+              validator:
+                  (value) =>
+                      value == null || value.isEmpty
+                          ? "Please enter a description"
+                          : null,
+              onSaved: (newValue) => _description = newValue,
             ),
-          ),
-
-          if (_availableUntil != null)
-            Text(
-              "Available Until: ${_availableUntil!.year}/${_availableUntil!.month}/${_availableUntil!.day}",
-            )
-          else
-            const Text("Available Until: Not set"),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () async {
-                DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: _availableUntil ?? DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (pickedDate != null && pickedDate != _availableUntil) {
-                  setState(() {
-                    _availableUntil = pickedDate;
-                  });
-                }
+            const SizedBox(height: 8),
+            TextFormField(
+              decoration: const InputDecoration(labelText: "Price"),
+              validator: (value) {
+                if (value == null || value.isEmpty)
+                  return "Please enter a price";
+                if (double.tryParse(value) == null)
+                  return "Please enter a valid number";
+                return null;
               },
-              child: const Text("Select Available From date"),
+              onSaved: (newValue) => _price = newValue,
             ),
-          ),
-
-          SizedBox(
-            height: 300,
-            child: FlutterMap(
-              mapController: widget.mapController,
-              options: MapOptions(
-                initialCenter: LatLng(51.23016715, 4.4161294643975015),
-                initialZoom: 14.0,
-                interactionOptions: InteractionOptions(
-                  flags:
-                      InteractiveFlag.drag |
-                      InteractiveFlag.pinchMove |
-                      InteractiveFlag.pinchZoom |
-                      InteractiveFlag.doubleTapZoom |
-                      InteractiveFlag.scrollWheelZoom,
-                ),
+            const SizedBox(height: 8),
+            DropdownMenu(
+              dropdownMenuEntries: ApplianceCategory.entries,
+              width: double.infinity,
+              label: const Text("Category"),
+              onSelected: (value) => setState(() => _category = value),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _availableFrom != null
+                  ? "Available From: ${_availableFrom!.year}/${_availableFrom!.month}/${_availableFrom!.day}"
+                  : "Available From: Not set",
+            ),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () async {
+                  DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: _availableFrom ?? DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (picked != null) setState(() => _availableFrom = picked);
+                },
+                child: const Text("Select Available From date"),
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'edu.ap.flutter_map',
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _availableUntil != null
+                  ? "Available Until: ${_availableUntil!.year}/${_availableUntil!.month}/${_availableUntil!.day}"
+                  : "Available Until: Not set",
+            ),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () async {
+                  DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: _availableUntil ?? DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (picked != null) setState(() => _availableUntil = picked);
+                },
+                child: const Text("Select Available Until date"),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 300,
+              child: FlutterMap(
+                mapController: widget.mapController,
+                options: MapOptions(
+                  initialCenter: LatLng(51.23016715, 4.4161294643975015),
+                  initialZoom: 14.0,
+                  interactionOptions: InteractionOptions(
+                    flags: InteractiveFlag.all,
+                  ),
                 ),
-                MarkerLayer(
-                  markers: [
-                    if (_selectedLocation != null)
-                      Marker(
-                        alignment: Alignment(0, -1),
-                        point: _selectedLocation!,
-                        child: Icon(
-                          Icons.location_on,
-                          color: Colors.red,
-                          size: 40,
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'edu.ap.flutter_map',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      if (_selectedLocation != null)
+                        Marker(
+                          alignment: Alignment(0, -1),
+                          point: _selectedLocation!,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-                Center(
-                  child: Icon(Icons.close, color: Colors.black45, size: 40),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () {
-                setState(() {
-                  _selectedLocation = widget.mapController.camera.center;
-                });
-              },
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(Colors.blue),
-                foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                    ],
+                  ),
+                  const Center(
+                    child: Icon(Icons.close, color: Colors.black45, size: 40),
+                  ),
+                ],
               ),
-              child: const Text("Pick This Location"),
             ),
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: 200,
-            child:
-                _imageFile != null
-                    ? kIsWeb
-                        ? Image.network(_imageFile!.path, fit: BoxFit.cover) // web
-                        : Image.file(_imageFile!, fit: BoxFit.cover) // mobile
-                    : const Center(child: Text('No image selected')),
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _pickImage,
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(Colors.blue),
-                foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed:
+                    () => setState(
+                      () =>
+                          _selectedLocation =
+                              widget.mapController.camera.center,
+                    ),
+                child: const Text("Pick This Location"),
               ),
-              child: const Text('Pick Image'),
             ),
-          ),
-          Divider(height: 8, thickness: 1),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 200,
+              child:
+                  _imageFile != null
+                      ? (kIsWeb
+                          ? Image.memory(_imageBytes!, fit: BoxFit.cover)
+                          : Image.file(
+                            File(_imageFile!.path),
+                            fit: BoxFit.cover,
+                          ))
+                      : const Center(child: Text('No image selected')),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _pickImage,
+                child: const Text('Pick Image'),
+              ),
+            ),
+            const Divider(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    if (_selectedLocation == null ||
+                        _availableFrom == null ||
+                        _availableUntil == null ||
+                        _availableFrom!.isAfter(_availableUntil!) ||
+                        _category == null ||
+                        _imageFile == null) {
+                      setState(
+                        () =>
+                            _errorMessage = "Please fill all fields correctly",
+                      );
+                      return;
+                    }
 
-                  if (_selectedLocation == null) {
-                    setState(() {
-                      _errorMessage = "Please select a location";
-                    });
-                    return;
-                  }
-                  if (_availableFrom == null || _availableUntil == null) {
-                    setState(() {
-                      _errorMessage = "Please select available dates";
-                    });
-                    return;
-                  }
-                  if (_availableFrom!.isAfter(_availableUntil!)) {
-                    setState(() {
-                      _errorMessage = "Please select a valid date range";
-                    });
-                  }
-                  if (_category == null) {
-                    setState(() {
-                      _errorMessage = "Please select a category";
-                    });
-                    return;
-                  }
-                  if (_imageFile == null) {
-                    setState(() {
-                      _errorMessage = "Please select an image";
-                    });
-                  }
+                    final imageUrl = await _uploadImageToImgbb();
+                    if (imageUrl.isEmpty) {
+                      setState(() => _errorMessage = "Image upload failed");
+                      return;
+                    }
 
-                  widget
-                      .onSubmit!(
-                        _description!,
-                        _price!,
-                        _category!,
-                        _selectedLocation!,
-                        _imageFile!.path,
-                        _availableFrom!,
-                        _availableUntil!,
-                      )
-                      .then((result) {
-                        if (!result.$1) {
-                          setState(() {
-                            _errorMessage = result.$2;
-                          });
-                        } else {
-                          if (context.mounted) Navigator.pop(context);
-                        }
-                      });
-                }
-              },
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
-                foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                    widget
+                        .onSubmit!(
+                          _description!,
+                          _price!,
+                          _category!,
+                          _selectedLocation!,
+                          imageUrl,
+                          _availableFrom!,
+                          _availableUntil!,
+                        )
+                        .then((result) {
+                          if (!result.$1) {
+                            setState(() => _errorMessage = result.$2);
+                          } else {
+                            if (context.mounted) Navigator.pop(context);
+                          }
+                        });
+                  }
+                },
+                style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
+                  foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+                ),
+                child: const Text("Submit"),
               ),
-              child: const Text("Submit"),
             ),
-          ),
-          if (_errorMessage != null)
-            Text(_errorMessage!, style: const TextStyle(color: Colors.red))
-        ],
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            ],
+          ],
+        ),
       ),
     );
   }
