@@ -29,6 +29,7 @@ class MainListingRoute extends StatefulWidget {
 class _MainListingRouteState extends State<MainListingRoute> {
   ApplianceCategory? selectedCategory;
   LatLng? _selectedLocation;
+  // ignore: unused_field
   double? _selectedDistance;
 
   @override
@@ -132,13 +133,27 @@ class _MainListingRouteState extends State<MainListingRoute> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   final docs = snapshot.data!.docs;
+                  final now = DateTime.now();
                   final filteredDocs =
-                      selectedCategory == null
-                          ? docs
-                          : docs.where((doc) {
-                            final data = doc.data();
-                            return data['category'] == selectedCategory!.name;
-                          }).toList();
+                      docs.where((doc) {
+                        final data = doc.data();
+
+                        final categoryMatch =
+                            selectedCategory == null
+                                ? true
+                                : data['category'] == selectedCategory!.name;
+
+                        final availableFrom =
+                            (data['availableFrom'] as Timestamp).toDate();
+                        final availableUntil =
+                            (data['availableUntil'] as Timestamp).toDate();
+                        final availabilityMatch =
+                            availableFrom.isBefore(now) &&
+                            availableUntil.isAfter(now);
+
+                        return categoryMatch && availabilityMatch;
+                      }).toList();
+
                   if (filteredDocs.isEmpty) {
                     return const Center(child: Text("No appliances found."));
                   }

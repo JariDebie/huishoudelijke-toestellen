@@ -64,6 +64,61 @@ class Booking {
     }
   }
 
+  Future<void> save() async {
+    final firestore = FirebaseFirestore.instance;
+
+    // Sla de booking op
+    await firestore.collection('bookings').add(toFirestore());
+
+    // Update beschikbaarheid in Appliance
+    final applianceRef = firestore.collection('appliances').doc(applianceId);
+    final applianceSnap = await applianceRef.get();
+
+    if (!applianceSnap.exists) return;
+
+    final data = applianceSnap.data() as Map<String, dynamic>;
+    final DateTime availableFrom =
+        (data['availableFrom'] as Timestamp).toDate();
+    final DateTime availableUntil =
+        (data['availableUntil'] as Timestamp).toDate();
+
+    // Logica om beschikbaarheid aan te passen
+    if (reservedFromDate.isAfter(availableFrom) &&
+        reservedToDate.isBefore(availableUntil)) {
+      // Appliance is maar deels geboekt — splitsen is complex, dus markeren als niet meer beschikbaar
+      await applianceRef.update({
+        'availableFrom': Timestamp.fromDate(
+          DateTime(2100),
+        ), // ver in de toekomst = niet beschikbaar
+        'availableUntil': Timestamp.fromDate(DateTime(2100)),
+      });
+    } else if (isSameDate(reservedFromDate, availableFrom) &&
+        reservedToDate.isBefore(availableUntil)) {
+      await applianceRef.update({
+        'availableFrom': Timestamp.fromDate(
+          reservedToDate.add(const Duration(days: 1)),
+        ),
+      });
+    } else if (reservedToDate.isAtSameMomentAs(availableUntil) &&
+        reservedFromDate.isAfter(availableFrom)) {
+      await applianceRef.update({
+        'availableUntil': Timestamp.fromDate(
+          reservedFromDate.subtract(const Duration(days: 1)),
+        ),
+      });
+    } else if (reservedFromDate.isAtSameMomentAs(availableFrom) &&
+        reservedToDate.isAtSameMomentAs(availableUntil)) {
+      await applianceRef.update({
+        'availableFrom': Timestamp.fromDate(DateTime(2100)),
+        'availableUntil': Timestamp.fromDate(DateTime(2100)),
+      });
+    }
+  }
+
+  bool isSameDate(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
   factory Booking.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
     SnapshotOptions? opt,

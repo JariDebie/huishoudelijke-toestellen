@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/types/appliance.dart';
 import 'package:flutter_application_1/types/booking.dart';
 import 'package:flutter_application_1/types/user.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ListingBookingRoute extends StatefulWidget {
   final Appliance appliance;
@@ -137,9 +136,7 @@ class _ListingBookingRouteState extends State<ListingBookingRoute> {
                             reservedFromDate: reservedFrom!,
                             reservedToDate: reservedTo!,
                           );
-                          await FirebaseFirestore.instance
-                              .collection('bookings')
-                              .add(booking.toFirestore());
+                          await booking.save();
                           setState(() => isLoading = false);
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
