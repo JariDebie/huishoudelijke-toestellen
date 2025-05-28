@@ -196,6 +196,7 @@ class _MainListingRouteState extends State<MainListingRoute> {
                                   (context) => ListingDetailsRoute(
                                     appliance: appliance,
                                     author: author,
+                                    currentUser: widget.user
                                   ),
                             ),
                           );

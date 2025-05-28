@@ -7,11 +7,13 @@ import 'package:flutter_application_1/types/user.dart';
 class ListingDetailsRoute extends StatelessWidget {
   final Appliance appliance;
   final User author;
+  final User currentUser;
 
   const ListingDetailsRoute({
     super.key,
     required this.appliance,
     required this.author,
+    required this.currentUser
   });
 
   @override
@@ -112,7 +114,7 @@ class ListingDetailsRoute extends StatelessWidget {
                       builder:
                           (context) => ListingBookingRoute(
                             appliance: appliance,
-                            currentUser: author,
+                            currentUser: currentUser,
                           ),
                     ),
                   );
