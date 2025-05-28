@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 class ListingLocationSelectRoute extends StatefulWidget {
   final MapController mapController = MapController();
   final LatLng? initialLocation;
-  final void Function(LatLng newLocation, double distance) selectLocation;
+  final void Function(LatLng? newLocation, double? distance) selectLocation;
 
   ListingLocationSelectRoute({
     super.key,
@@ -121,6 +121,9 @@ class _ListingLocationSelectRouteState
             SizedBox(
               width: double.infinity,
               child: FilledButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.green),
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                   widget.selectLocation(
@@ -129,6 +132,19 @@ class _ListingLocationSelectRouteState
                   );
                 },
                 child: const Text("Confirm"),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.red),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  widget.selectLocation(null, null);
+                },
+                child: const Text("Reset"),
               ),
             ),
           ],

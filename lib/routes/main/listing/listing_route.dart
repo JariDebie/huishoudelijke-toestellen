@@ -134,25 +134,27 @@ class _MainListingRouteState extends State<MainListingRoute> {
                   }
                   final docs = snapshot.data!.docs;
                   final now = DateTime.now();
-                  final filteredDocs =
-                      docs.where((doc) {
-                        final data = doc.data();
+                  final filteredDocs = docs.where((doc) {
+                    final data = doc.data();
 
-                        final categoryMatch =
-                            selectedCategory == null
-                                ? true
-                                : data['category'] == selectedCategory!.name;
+                    final categoryMatch = selectedCategory == null
+                        ? true
+                        : data['category'] == selectedCategory!.name;
 
-                        final availableFrom =
-                            (data['availableFrom'] as Timestamp).toDate();
-                        final availableUntil =
-                            (data['availableUntil'] as Timestamp).toDate();
-                        final availabilityMatch =
-                            availableFrom.isBefore(now) &&
-                            availableUntil.isAfter(now);
+                    final availableFrom = (data['availableFrom'] as Timestamp).toDate();
+                    final availableUntil = (data['availableUntil'] as Timestamp).toDate();
+                    final availabilityMatch = availableFrom.isBefore(now) && availableUntil.isAfter(now);
 
-                        return categoryMatch && availabilityMatch;
-                      }).toList();
+                    bool distanceMatch = true;
+                    if (_selectedLocation != null && _selectedDistance != null) {
+                      final GeoPoint location = data['location'];
+                      final applianceLocation = LatLng(location.latitude, location.longitude);
+                      final distance = widget.calculateDistance(_selectedLocation!, applianceLocation);
+                      distanceMatch = distance <= _selectedDistance!;
+                    }
+
+                    return categoryMatch && availabilityMatch && distanceMatch;
+                  }).toList();
 
                   if (filteredDocs.isEmpty) {
                     return const Center(child: Text("No appliances found."));
