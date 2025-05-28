@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_application_1/routes/landing/landing_route.dart';
 import 'package:flutter_application_1/types/user.dart';
 import 'package:flutter_application_1/types/appliance.dart';
 import 'package:flutter_application_1/types/booking.dart';
@@ -70,6 +71,14 @@ class _ProfileRouteState extends State<ProfileRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Manage Profile")),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LandingRoute()));
+        },
+        backgroundColor: Colors.red.shade200,
+        child: const Icon(Icons.door_back_door),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(

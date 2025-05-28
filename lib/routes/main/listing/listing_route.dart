@@ -141,9 +141,8 @@ class _MainListingRouteState extends State<MainListingRoute> {
                         ? true
                         : data['category'] == selectedCategory!.name;
 
-                    final availableFrom = (data['availableFrom'] as Timestamp).toDate();
                     final availableUntil = (data['availableUntil'] as Timestamp).toDate();
-                    final availabilityMatch = availableFrom.isBefore(now) && availableUntil.isAfter(now);
+                    final availabilityMatch = availableUntil.isAfter(now);
 
                     bool distanceMatch = true;
                     if (_selectedLocation != null && _selectedDistance != null) {
